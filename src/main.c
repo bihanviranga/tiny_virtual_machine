@@ -1,8 +1,12 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-// When defined, prints out each value that is popped off the stack
+// Prints out each value that is popped off the stack
 #define PRINT_POPPED
+// Prints out the register and the value it is set to
+#define PRINT_SET
+// Dumps the current registry values when HLT is encountered
+#define DUMP_REGISTERS_ON_HALT
 
 // Instructions
 typedef enum {
@@ -25,14 +29,17 @@ int registers[NUM_OF_REGISTERS];
 // Forward declarations
 int fetch();
 void eval(int instr);
+void dump_registers();
 
 // Program to execute.
 // (hard coded for now)
 const int program[] = {
-  PSH, 5,
-  PSH, 6,
-  ADD,
-  POP,
+  SET, 0,  0,
+  SET, 1, 10,
+  SET, 2, 20,
+  SET, 3, 30,
+  SET, 4, 40,
+  SET, 5, 50,
   HLT
 };
 
@@ -55,22 +62,37 @@ int main() {
   return 0;
 }
 
+// Evalutes the given instruction
 void eval(int instr) {
   switch (instr) {
     case HLT: {
       running = false;
+#ifdef DUMP_REGISTERS_ON_HALT
+      dump_registers();
+#endif
       break;
     }
     case PSH: {
       (registers[SP])++;
       stack[registers[SP]] = program[++(registers[IP])];
-      // NOTE: should the above RVAL be `program[++(registers[IP])]` ?
       break;
     }
     case POP: {
       int popped = stack[(registers[SP])--];
 #ifdef PRINT_POPPED
       printf("[POP] %d\n", popped);
+#endif
+      break;
+    }
+    case SET: {
+      // IP contains the value SET
+      // IP+1 contains the value of the register to SET
+      // IP+2 contains the value to set in the register
+      int reg = program[++(registers[IP])];
+      int val = program[++(registers[IP])];
+      registers[reg] = val;
+#ifdef PRINT_SET
+      printf("[SET] Reg: %d Val: %d\n", reg, val);
 #endif
       break;
     }
@@ -85,6 +107,16 @@ void eval(int instr) {
   }
 }
 
+// Returns the instruction at IP
 int fetch() {
   return program[(registers[IP])];
+}
+
+// Utility function to dump register values
+void dump_registers() {
+  printf("[REG] === Registry dump ===\n");
+  for (int i = 0; i < NUM_OF_REGISTERS; i++) {
+    printf("[REG] %d Val: %d\n", i, registers[i]);
+  }
+  printf("[REG] === End registry dump ===\n");
 }

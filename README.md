@@ -16,3 +16,7 @@ Special purpose registers: IP (instruction pointer), SP (stack pointer)
 
 ## Debugging
 Using `#define PRINT_POPPED` every popped value will be printed to stdout.
+
+## To-do
+- Implement the SET instruction
+- Enable conditionals through JMP instructions
