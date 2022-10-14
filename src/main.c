@@ -13,6 +13,15 @@ typedef enum {
   HLT
 } InstructionSet;
 
+// Registers
+typedef enum {
+  A, B, C, D, E, F,   // General purpose registers
+  IP, SP,             // Instruction pointer and Stack pointer
+  NUM_OF_REGISTERS
+} Registers;
+
+int registers[NUM_OF_REGISTERS];
+
 // Forward declarations
 int fetch();
 void eval(int instr);
@@ -27,20 +36,20 @@ const int program[] = {
   HLT
 };
 
-// Instruction pointer
-int ip = 0;
-// Stack pointer. -1 means uninitialized.
-int sp = -1;
-
 // Whether the VM is running
 bool running = true;
 // Stack. Size is hard coded for now.
 int stack[256];
 
 int main() {
+  // Instruction pointer
+  registers[IP] = 0;
+  // Stack pointer. -1 means uninitialized.
+  registers[SP] = -1;
+
   while (running) {
     eval(fetch());
-    ip++;
+    (registers[IP])++;
   }
 
   return 0;
@@ -53,28 +62,29 @@ void eval(int instr) {
       break;
     }
     case PSH: {
-      sp++;
-      stack[sp] = program[++ip];
+      (registers[SP])++;
+      stack[registers[SP]] = program[++(registers[IP])];
+      // NOTE: should the above RVAL be `program[++(registers[IP])]` ?
       break;
     }
     case POP: {
-      int popped = stack[sp--];
+      int popped = stack[(registers[SP])--];
 #ifdef PRINT_POPPED
       printf("[POP] %d\n", popped);
 #endif
       break;
     }
     case ADD: {
-      int val_1 = stack[sp--];
-      int val_2 = stack[sp--];
+      int val_1 = stack[(registers[SP])--];
+      int val_2 = stack[(registers[SP])--];
       int result = val_1 + val_2;
-      sp++;
-      stack[sp] = result;
+      (registers[SP])++;
+      stack[(registers[SP])] = result;
       break;
     }
   }
 }
 
 int fetch() {
-  return program[ip];
+  return program[(registers[IP])];
 }
