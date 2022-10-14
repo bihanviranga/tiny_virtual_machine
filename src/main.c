@@ -1,4 +1,8 @@
 #include <stdbool.h>
+#include <stdio.h>
+
+// When defined, prints out each value that is popped off the stack
+#define PRINT_POPPED
 
 // Instructions
 typedef enum {
@@ -51,6 +55,21 @@ void eval(int instr) {
     case PSH: {
       sp++;
       stack[sp] = program[++ip];
+      break;
+    }
+    case POP: {
+      int popped = stack[sp--];
+#ifdef PRINT_POPPED
+      printf("[POP] %d\n", popped);
+#endif
+      break;
+    }
+    case ADD: {
+      int val_1 = stack[sp--];
+      int val_2 = stack[sp--];
+      int result = val_1 + val_2;
+      sp++;
+      stack[sp] = result;
       break;
     }
   }
