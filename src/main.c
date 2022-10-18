@@ -14,7 +14,8 @@ typedef enum {
   ADD,
   POP,
   SET,
-  HLT
+  HLT,
+  JMP
 } InstructionSet;
 
 // Registers
@@ -36,6 +37,7 @@ void dump_registers();
 const int program[] = {
   SET, 0,  0,
   SET, 1, 10,
+  JMP, 6,
   SET, 2, 20,
   SET, 3, 30,
   SET, 4, 40,
@@ -104,18 +106,24 @@ void eval(int instr) {
       stack[(registers[SP])] = result;
       break;
     }
+    case JMP: {
+      int arg = program[IP + 1];
+      // +1 here is to account for the arg
+      registers[IP] = registers[IP] + arg + 1;
+    }
   }
 }
 
 // Returns the instruction at IP
 int fetch() {
+  // printf("[FETCH] Fetching %d\n", registers[IP]);
   return program[(registers[IP])];
 }
 
 // Utility function to dump register values
 void dump_registers() {
   printf("[REG] === Registry dump ===\n");
-  for (int i = 0; i < NUM_OF_REGISTERS; i++) {
+  for (int i = 0; i <= 5; i++) {
     printf("[REG] %d Val: %d\n", i, registers[i]);
   }
   printf("[REG] === End registry dump ===\n");
